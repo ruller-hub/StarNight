@@ -100,15 +100,18 @@ if (!parsed) {
   }
 }
 if (!parsed) {
-  return;
-}
-    let { commandName, args } = parsed;
-    const musicPrefixShortcut = commandName.toLowerCase();
-    const MUSIC_PREFIX_SHORTCUTS = new Set(['leave', 'pause', 'resume', 'skip', 'stop', 'volume']);
-    if (MUSIC_PREFIX_SHORTCUTS.has(musicPrefixShortcut)) {
-      commandName = 'music';
-      args = [musicPrefixShortcut, ...args];
+    const parts = message.content.trim().split(/\s+/);
+
+    if (parts[0].toLowerCase() === 'n') {
+        parsed = {
+            commandName: 'setnickname',
+            args: [
+                parts[1],
+                parts.slice(2).join(' ')
+            ],
+        };
     }
+}
 
     logger.info(`Prefix command detected: ${commandName}, args: ${args.join(', ')}`);
 
