@@ -46,14 +46,38 @@ export default {
 
 async function handlePrefixCommand(message, client) {
   try {
-    const guildConfig = await getGuildConfig(client, message.guild.id);
-    const prefix = guildConfig?.prefix || getCommandPrefix();
-    const parsed = parsePrefixCommand(message.content, prefix);
-    
-    if (!parsed) {
-      return; 
-    }
+  const guildConfig = await getGuildConfig(client, message.guild.id);
+const prefix = guildConfig?.prefix ?? getCommandPrefix();
 
+let parsed = null;
+
+// !ban @user
+if (prefix && message.content.startsWith(prefix)) {
+  parsed = parsePrefixCommand(message.content, prefix);
+}
+
+// ban @user
+if (!parsed) {
+  const content = message.content.trim();
+
+  if (content) {
+    const parts = content.split(/\s+/);
+    const possibleCommand = parts[0].toLowerCase();
+
+    const resolvedPossibleCommand = resolveCommandAlias(possibleCommand);
+
+    if (client.commands.has(resolvedPossibleCommand)) {
+      parsed = {
+        commandName: possibleCommand,
+        args: parts.slice(1),
+      };
+    }
+  }
+}
+
+if (!parsed) {
+  return;
+}
     let { commandName, args } = parsed;
     const musicPrefixShortcut = commandName.toLowerCase();
     const MUSIC_PREFIX_SHORTCUTS = new Set(['leave', 'pause', 'resume', 'skip', 'stop', 'volume']);
