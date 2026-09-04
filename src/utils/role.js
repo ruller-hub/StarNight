@@ -1,3 +1,4 @@
+```js
 import {
     SlashCommandBuilder,
     PermissionFlagsBits
@@ -7,22 +8,33 @@ export default {
     data: new SlashCommandBuilder()
         .setName('role')
         .setDescription('Give a role to a member')
+
         .addUserOption(option =>
             option
                 .setName('user')
                 .setDescription('The member to give the role to')
                 .setRequired(true)
         )
-       .addStringOption(option =>
-    option
-        .setName('role')
-        .setDescription('The name of the role to give')
-        .setRequired(true)
-)
+
+        .addStringOption(option =>
+            option
+                .setName('role')
+                .setDescription('The name of the role to give')
+                .setRequired(true)
+        )
+
+        .setDefaultMemberPermissions(
+            PermissionFlagsBits.ManageRoles
+        ),
 
     async execute(interaction) {
         const user = interaction.options.getUser('user');
-        const role = interaction.options.getRole('role');
+        const roleName = interaction.options.getString('role')?.trim();
+
+        // Find role by exact name, ignoring uppercase/lowercase
+        const role = interaction.guild.roles.cache.find(
+            r => r.name.toLowerCase() === roleName.toLowerCase()
+        );
 
         const member = await interaction.guild.members
             .fetch(user.id)
@@ -37,7 +49,7 @@ export default {
 
         if (!role) {
             return interaction.reply({
-                content: '❌ Role not found.',
+                content: `❌ Role **${roleName}** not found.`,
                 ephemeral: true
             });
         }
@@ -49,12 +61,21 @@ export default {
             });
         }
 
+        const botMember = interaction.guild.members.me;
+
+        if (!botMember) {
+            return interaction.reply({
+                content: '❌ I could not find my bot member in this server.',
+                ephemeral: true
+            });
+        }
+
         if (
-            interaction.guild.members.me.roles.highest.position <=
-            role.position
+            botMember.roles.highest.position <= role.position
         ) {
             return interaction.reply({
-                content: '❌ That role is higher than or equal to my highest role.',
+                content:
+                    '❌ That role is higher than or equal to my highest role.',
                 ephemeral: true
             });
         }
@@ -73,3 +94,20 @@ export default {
         });
     }
 };
+```
+
+Now your role can be entered by **name only**, without `@`.
+
+**Example:**
+
+```text
+/role @Ali Moderator
+```
+
+or:
+
+```text
+r @Ali Moderator
+```
+
+Make sure the bot's highest role is **above** the role you're trying to give.
