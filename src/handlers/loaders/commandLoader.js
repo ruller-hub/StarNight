@@ -7,7 +7,7 @@ import botConfig from '../../config/bot.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const MAX_COMMANDS = 100;
+const MAX_COMMANDS = 102;
 const COMMAND_COUNT_WARN_THRESHOLD = 90;
 
 function getSubcommandInfo(commandData) {
