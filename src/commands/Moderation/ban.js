@@ -6,7 +6,7 @@ import { TitanBotError, ErrorTypes } from '../../utils/errorHandler.js';
 
 export default {
     data: new SlashCommandBuilder()
-        .setName("ban , 42 , sybau")
+        .setName("ban")
         .setDescription("Ban a user from the server")
         .addUserOption((option) =>
             option
