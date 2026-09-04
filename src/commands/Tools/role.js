@@ -27,9 +27,23 @@ export default {
         const user = interaction.options.getUser('user');
         const roleName = interaction.options.getString('role')?.trim();
 
+        if (!roleName) {
+            return interaction.reply({
+                content: '❌ Please provide a role name.',
+                ephemeral: true
+            });
+        }
+
         const role = interaction.guild.roles.cache.find(
             r => r.name.toLowerCase() === roleName.toLowerCase()
         );
+
+        if (!role) {
+            return interaction.reply({
+                content: `❌ Role **${roleName}** not found.`,
+                ephemeral: true
+            });
+        }
 
         const member = await interaction.guild.members
             .fetch(user.id)
@@ -38,13 +52,6 @@ export default {
         if (!member) {
             return interaction.reply({
                 content: '❌ Member not found.',
-                ephemeral: true
-            });
-        }
-
-        if (!role) {
-            return interaction.reply({
-                content: `❌ Role **${roleName}** not found.`,
                 ephemeral: true
             });
         }
@@ -60,14 +67,15 @@ export default {
 
         if (!botMember) {
             return interaction.reply({
-                content: '❌ I could not find my bot member in this server.',
+                content: '❌ I could not find my bot member.',
                 ephemeral: true
             });
         }
 
         if (botMember.roles.highest.position <= role.position) {
             return interaction.reply({
-                content: '❌ That role is higher than or equal to my highest role.',
+                content:
+                    '❌ That role is higher than or equal to my highest role.',
                 ephemeral: true
             });
         }
@@ -79,10 +87,19 @@ export default {
             });
         }
 
-        await member.roles.add(role);
+        try {
+            await member.roles.add(role);
 
-        await interaction.reply({
-            content: `✅ Gave ${role} to ${user}.`
-        });
+            await interaction.reply({
+                content: `✅ Gave ${role} to ${user}.`
+            });
+        } catch (error) {
+            console.error('Error giving role:', error);
+
+            await interaction.reply({
+                content: '❌ I could not give that role.',
+                ephemeral: true
+            });
+        }
     }
 };
