@@ -4,12 +4,11 @@
  */
 
 export const commandAliases = {
-    export const COMMAND_ALIASES = {
-    tm: 'timeout',
-    b: 'ban',
-    k: 'kick',
-    w: 'warn',
-};
+    'tm': 'timeout',
+    'b': 'ban',
+    'k': 'kick',
+    'w': 'warn',
+
     'bal': 'balance',
     'money': 'balance',
     'cash': 'balance',
@@ -39,7 +38,6 @@ export const commandAliases = {
     'purge': 'purge',
     'untimeout': 'untimeout',
     'unmute': 'untimeout',
-
     'rank': 'rank',
     'lvl': 'rank',
     'xp': 'rank',
