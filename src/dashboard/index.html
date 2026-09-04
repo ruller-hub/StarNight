@@ -1,1 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TitanBot Dashboard</title>
 
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #0f1117;
+            color: white;
+            min-height: 100vh;
+        }
+
+        header {
+            height: 70px;
+            background: #171a23;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            border-bottom: 1px solid #292d3a;
+        }
+
+        .logo {
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .status {
+            color: #43e97b;
+            font-size: 14px;
+        }
+
+        .container {
+            display: flex;
+            min-height: calc(100vh - 70px);
+        }
+
+        aside {
+            width: 230px;
+            background: #141720;
+            padding: 25px 15px;
+            border-right: 1px solid #292d3a;
+        }
+
+        .menu-title {
+            color: #777;
+            font-size: 12px;
+            margin: 10px 10px;
+            text-transform: uppercase;
+        }
+
+        .menu {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 5px;
+            border-radius: 8px;
+            color: #bbb;
+            text-decoration: none;
+        }
+
+        .menu:hover,
+        .menu.active {
+            background: #5865f2;
+            color: white;
+        }
+
+        main {
+            flex: 1;
+            padding: 35px;
+        }
+
+        h1 {
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #888;
+            margin-bottom: 30px;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .card {
+            background: #171a23;
+            border: 1px solid #292d3a;
+            border-radius: 12px;
+            padding: 25px;
+        }
+
+        .card-title {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        .card-value {
+            font-size: 30px;
+            font-weight: bold;
+        }
+
+        .section {
+            margin-top: 30px;
+        }
+
+        .section h2 {
+            margin-bottom: 15px;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .feature {
+            background: #171a23;
+            border: 1px solid #292d3a;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .feature h3 {
+            margin-bottom: 8px;
+        }
+
+        .feature p {
+            color: #888;
+        }
+
+        @media (max-width: 800px) {
+            aside {
+                display: none;
+            }
+
+            .cards,
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+
+            main {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <div class="logo">⭐ TitanBot</div>
+    <div class="status">● Bot Online</div>
+</header>
+
+<div class="container">
+
+    <aside>
+
+        <div class="menu-title">Dashboard</div>
+
+        <a href="/" class="menu active">
+            🏠 Overview
+        </a>
+
+        <a href="#" class="menu">
+            🛡️ Moderation
+        </a>
+
+        <a href="#" class="menu">
+            👋 Welcome
+        </a>
+
+        <a href="#" class="menu">
+            🎫 Tickets
+        </a>
+
+        <a href="#" class="menu">
+            🎭 Reaction Roles
+        </a>
+
+        <a href="#" class="menu">
+            📈 Leveling
+        </a>
+
+        <div class="menu-title">Settings</div>
+
+        <a href="#" class="menu">
+            ⚙️ Server Settings
+        </a>
+
+    </aside>
+
+    <main>
+
+        <h1>Dashboard</h1>
+
+        <p class="subtitle">
+            Manage your Discord server with TitanBot.
+        </p>
+
+        <div class="cards">
+
+            <div class="card">
+                <div class="card-title">Servers</div>
+                <div class="card-value" id="guildCount">Loading...</div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Commands</div>
+                <div class="card-value" id="commandCount">Loading...</div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Bot Status</div>
+                <div class="card-value">Online</div>
+            </div>
+
+        </div>
+
+        <div class="section">
+
+            <h2>Features</h2>
+
+            <div class="feature-grid">
+
+                <div class="feature">
+                    <h3>🛡️ Moderation</h3>
+                    <p>Manage warnings, bans, kicks and moderation settings.</p>
+                </div>
+
+                <div class="feature">
+                    <h3>👋 Welcome</h3>
+                    <p>Configure welcome messages and automatic roles.</p>
+                </div>
+
+                <div class="feature">
+                    <h3>🎫 Tickets</h3>
+                    <p>Configure your support ticket system.</p>
+                </div>
+
+                <div class="feature">
+                    <h3>📈 Leveling</h3>
+                    <p>Manage XP and leveling settings.</p>
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+</div>
+
+<script>
+
+fetch('/api/dashboard')
+    .then(response => response.json())
+    .then(data => {
+
+        document.getElementById('guildCount').textContent =
+            data.guildCount;
+
+        document.getElementById('commandCount').textContent =
+            data.commandCount;
+
+    })
+    .catch(error => {
+
+        console.error(error);
+
+        document.getElementById('guildCount').textContent = '?';
+        document.getElementById('commandCount').textContent = '?';
+
+    });
+
+</script>
+
+</body>
+</html>
