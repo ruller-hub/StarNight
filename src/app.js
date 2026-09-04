@@ -5,7 +5,7 @@ import express from 'express';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import cron from 'node-cron';
-
+import { getGuildConfig } from './services/config/guildConfig.js';
 import config from './config/application.js';
 import { initializeDatabase } from './utils/database.js';
 import { getGuildConfig } from './services/config/guildConfig.js';
