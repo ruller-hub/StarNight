@@ -91,15 +91,16 @@ export async function loadCommands(client) {
             
             logger.info(`Loaded command: ${primaryCommandName} from ${normalizedPath} (category: ${category})`);
             
-            if (subcommands.length > 0) {
+                        if (subcommands.length > 0) {
                 logger.info(`  - Subcommands: ${subcommands.join(', ')}`);
             }
-            
-       } catch (error) {
-    logger.error(`❌ ERROR LOADING COMMAND: ${filePath}`);
-    logger.error(`❌ ${error.stack || error.message || error}`);
-}
-    
+
+        } catch (error) {
+            logger.error(`❌ ERROR LOADING COMMAND: ${filePath}`);
+            logger.error(`❌ ${error.stack || error.message || error}`);
+        }
+    }
+
     const commandsWithSubcommands = Array.from(client.commands.values()).filter(cmd => {
         const subcommands = getSubcommandInfo(cmd.data.toJSON());
         return subcommands.length > 0;
