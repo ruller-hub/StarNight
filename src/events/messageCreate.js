@@ -31,12 +31,12 @@ export default {
 
       logger.debug(`Message received from ${message.author.tag}: ${message.content}`);
 
-    const countingProcessed = await handleCountingGame(message, client);
+   await handleAutoResponder(message);
+
+const countingProcessed = await handleCountingGame(message, client);
 if (countingProcessed) {
   return;
 }
-
-await handleAutoResponder(message);
 
 await handlePrefixCommand(message, client);
 
