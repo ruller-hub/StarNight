@@ -47,6 +47,17 @@ await handleLeveling(message, client);
   }
 };
 
+async function handleAutoResponder(message) {
+  const response = getAutoResponse(message.content);
+
+  if (!response) {
+    return false;
+  }
+
+  await message.reply(response);
+  return true;
+}
+
 async function handlePrefixCommand(message, client) {
   try {
   const guildConfig = await getGuildConfig(client, message.guild.id);
