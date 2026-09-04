@@ -31,14 +31,16 @@ export default {
 
       logger.debug(`Message received from ${message.author.tag}: ${message.content}`);
 
-      const countingProcessed = await handleCountingGame(message, client);
-      if (countingProcessed) {
-        return;
-      }
+    const countingProcessed = await handleCountingGame(message, client);
+if (countingProcessed) {
+  return;
+}
 
-      await handlePrefixCommand(message, client);
+await handleAutoResponder(message);
 
-      await handleLeveling(message, client);
+await handlePrefixCommand(message, client);
+
+await handleLeveling(message, client);
     } catch (error) {
       logger.error('Error in messageCreate event:', error);
     }
