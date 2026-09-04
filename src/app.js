@@ -214,7 +214,41 @@ app.get('/api/dashboard', (req, res) => {
     botReady: this.isReady()
   });
 });
-    
+ app.get('/api/dashboard/config', async (req, res) => {
+  try {
+    const guildId = req.query.guildId;
+
+    if (!guildId) {
+      return res.status(400).json({
+        error: 'guildId is required'
+      });
+    }
+
+    const guild = this.guilds.cache.get(guildId);
+
+    if (!guild) {
+      return res.status(404).json({
+        error: 'Guild not found'
+      });
+    }
+
+    const config = await getGuildConfig(this, guildId, {
+      source: 'dashboard'
+    });
+
+    res.json({
+      guildId,
+      guildName: guild.name,
+      config
+    });
+  } catch (error) {
+    console.error('Dashboard config error:', error);
+
+    res.status(500).json({
+      error: 'Failed to load guild configuration'
+    });
+  }
+});   
     app.get('/', (req, res) => {
       res.status(200).json({ 
         message: 'TitanBot System Online',
