@@ -53,7 +53,8 @@ export default {
 
       await handleAutoResponder(message);
 
-      const countingProcessed = await handleCountingGame(message, client);
+      const countingProcessed =
+        await handleCountingGame(message, client);
 
       if (countingProcessed) {
         return;
@@ -64,39 +65,103 @@ export default {
       await handleLeveling(message, client);
 
     } catch (error) {
-      logger.error('Error in messageCreate event:', error);
+      logger.error(
+        'Error in messageCreate event:',
+        error
+      );
     }
   }
 };
 
 async function handleAutoResponder(message) {
-  const response = getAutoResponse(message.content);
+  const response = getAutoResponse(
+    message.content
+  );
 
   if (!response) {
     return false;
   }
 
   await message.reply(response);
+
   return true;
 }
 
-async function handlePrefixCommand(message, client) {
+async function handlePrefixCommand(
+  message,
+  client
+) {
   try {
-    const guildConfig = await getGuildConfig(
-      client,
-      message.guild.id
-    );
+    const guildConfig =
+      await getGuildConfig(
+        client,
+        message.guild.id
+      );
 
-    const prefix = guildConfig?.prefix ?? getCommandPrefix();
+    const prefix =
+      guildConfig?.prefix ??
+      getCommandPrefix();
 
     let parsed = null;
 
     // =========================================================
-    // PREFIX COMMAND
-    // Example: !ban @user
+    // ROLE SHORTCUT
+    //
+    // r @user Moderator
+    // r @user Server Moderator
+    //
+    // IMPORTANT:
+    // This is checked BEFORE normal prefixless commands.
     // =========================================================
 
-    if (prefix && message.content.startsWith(prefix)) {
+    const messageParts =
+      message.content
+        .trim()
+        .split(/\s+/);
+
+    if (
+      messageParts[0]?.toLowerCase() === 'r'
+    ) {
+      if (messageParts.length < 3) {
+        await message.channel.send(
+          '❌ Usage: `r @user role name`'
+        ).catch(() => {});
+
+        return;
+      }
+
+      parsed = {
+        commandName: 'role',
+
+        // First argument = user
+        // Everything after = role name
+        args: [
+          messageParts[1],
+          messageParts
+            .slice(2)
+            .join(' ')
+        ]
+      };
+
+      logger.info(
+        `Role shortcut detected: r ${parsed.args.join(' ')}`
+      );
+    }
+
+    // =========================================================
+    // PREFIX COMMAND
+    //
+    // Example:
+    // !ban @user
+    //
+    // Only run this if r was NOT detected.
+    // =========================================================
+
+    if (
+      !parsed &&
+      prefix &&
+      message.content.startsWith(prefix)
+    ) {
       parsed = parsePrefixCommand(
         message.content,
         prefix
@@ -105,20 +170,28 @@ async function handlePrefixCommand(message, client) {
 
     // =========================================================
     // PREFIXLESS COMMAND
-    // Example: ban @user
+    //
+    // Example:
+    // ban @user
+    //
+    // Only run if nothing was detected.
     // =========================================================
 
     if (!parsed) {
-      const content = message.content.trim();
+      const content =
+        message.content.trim();
 
       if (content) {
-        const parts = content.split(/\s+/);
+        const parts =
+          content.split(/\s+/);
 
         const possibleCommand =
           parts[0].toLowerCase();
 
         const resolvedPossibleCommand =
-          resolveCommandAlias(possibleCommand);
+          resolveCommandAlias(
+            possibleCommand
+          );
 
         if (
           client.commands.has(
@@ -126,8 +199,11 @@ async function handlePrefixCommand(message, client) {
           )
         ) {
           parsed = {
-            commandName: possibleCommand,
-            args: parts.slice(1),
+            commandName:
+              possibleCommand,
+
+            args:
+              parts.slice(1)
           };
         }
       }
@@ -135,16 +211,15 @@ async function handlePrefixCommand(message, client) {
 
     // =========================================================
     // NICKNAME SHORTCUT
-    // Example:
-    // n @lania xwshki a7a
     //
-    // User: @lania
-    // Nickname: xwshki a7a
+    // n @user New Nickname
     // =========================================================
 
     if (!parsed) {
       const parts =
-        message.content.trim().split(/\s+/);
+        message.content
+          .trim()
+          .split(/\s+/);
 
       if (
         parts[0]?.toLowerCase() === 'n'
@@ -158,19 +233,23 @@ async function handlePrefixCommand(message, client) {
         }
 
         parsed = {
-          commandName: 'setnickname',
+          commandName:
+            'setnickname',
 
-          // First argument = user
-          // Everything after = nickname
           args: [
             parts[1],
-            parts.slice(2).join(' ')
-          ],
+            parts
+              .slice(2)
+              .join(' ')
+          ]
         };
       }
     }
 
-    // Nothing detected
+    // =========================================================
+    // NOTHING DETECTED
+    // =========================================================
+
     if (!parsed) {
       return;
     }
@@ -179,27 +258,25 @@ async function handlePrefixCommand(message, client) {
     // GET COMMAND + ARGS
     // =========================================================
 
-    let { commandName, args } = parsed;
+    let {
+      commandName,
+      args
+    } = parsed;
 
     // =========================================================
     // EXTRA SAFETY FOR SETNICKNAME
-    //
-    // If another parser already created:
-    //
-    // ["@lania", "xwshki", "a7a"]
-    //
-    // turn it into:
-    //
-    // ["@lania", "xwshki a7a"]
     // =========================================================
 
     if (
-      commandName?.toLowerCase() === 'setnickname' &&
+      commandName?.toLowerCase() ===
+        'setnickname' &&
       args.length >= 2
     ) {
       args = [
         args[0],
-        args.slice(1).join(' ')
+        args
+          .slice(1)
+          .join(' ')
       ];
     }
 
@@ -242,7 +319,9 @@ async function handlePrefixCommand(message, client) {
     // =========================================================
 
     const resolvedCommandName =
-      resolveCommandAlias(commandName);
+      resolveCommandAlias(
+        commandName
+      );
 
     logger.info(
       `Resolved command name: ${resolvedCommandName}`
@@ -267,17 +346,23 @@ async function handlePrefixCommand(message, client) {
 
     if (
       isMaintenanceMode() &&
-      !isBotOwner(message.author.id)
+      !isBotOwner(
+        message.author.id
+      )
     ) {
       await message.channel.send({
         embeds: [
           createEmbed({
-            title: 'Maintenance Mode',
+            title:
+              'Maintenance Mode',
+
             description:
               getBotMessage(
                 'maintenanceMode'
               ),
-            color: 'warning',
+
+            color:
+              'warning',
           }),
         ],
       }).catch(() => {});
@@ -297,12 +382,16 @@ async function handlePrefixCommand(message, client) {
       await message.channel.send({
         embeds: [
           createEmbed({
-            title: 'Feature Disabled',
+            title:
+              'Feature Disabled',
+
             description:
               getBotMessage(
                 'commandDisabled'
               ),
-            color: 'error',
+
+            color:
+              'error',
           }),
         ],
       }).catch(() => {});
@@ -322,22 +411,31 @@ async function handlePrefixCommand(message, client) {
       );
 
     if (
-      !supportsPrefixExecution(command) ||
+      !supportsPrefixExecution(
+        command
+      ) ||
       restriction.blocked
     ) {
       if (
         restriction.blocked &&
         restriction.reason
       ) {
-        const embed = createEmbed({
-          title: 'Slash Command Only',
-          description:
-            `${restriction.reason}\nUse \`/${resolvedCommandName}\` instead.`,
-          color: 'info',
-        });
+        const embed =
+          createEmbed({
+            title:
+              'Slash Command Only',
+
+            description:
+              `${restriction.reason}\nUse \`/${resolvedCommandName}\` instead.`,
+
+            color:
+              'info',
+          });
 
         await message.channel.send({
-          embeds: [embed],
+          embeds: [
+            embed
+          ],
         }).catch(() => {});
       }
 
@@ -363,15 +461,22 @@ async function handlePrefixCommand(message, client) {
       );
 
     if (!commandEnabled) {
-      const embed = createEmbed({
-        title: 'Command Disabled',
-        description:
-          'This command has been disabled for this server.',
-        color: 'error',
-      });
+      const embed =
+        createEmbed({
+          title:
+            'Command Disabled',
+
+          description:
+            'This command has been disabled for this server.',
+
+          color:
+            'error',
+        });
 
       await message.channel.send({
-        embeds: [embed],
+        embeds: [
+          embed
+        ],
       }).catch(() => {});
 
       return;
@@ -382,8 +487,11 @@ async function handlePrefixCommand(message, client) {
     // =========================================================
 
     const mockInteractionForProtection = {
-      guildId: message.guild.id,
-      user: message.author,
+      guildId:
+        message.guild.id,
+
+      user:
+        message.author,
     };
 
     const abuseProtection =
@@ -393,21 +501,30 @@ async function handlePrefixCommand(message, client) {
         resolvedCommandName
       );
 
-    if (!abuseProtection.allowed) {
+    if (
+      !abuseProtection.allowed
+    ) {
       const formattedCooldown =
         formatCooldownDuration(
           abuseProtection.remainingMs
         );
 
-      const embed = createEmbed({
-        title: 'Command Cooldown',
-        description:
-          `This command is on cooldown. Please wait ${formattedCooldown} before trying again.`,
-        color: 'error',
-      });
+      const embed =
+        createEmbed({
+          title:
+            'Command Cooldown',
+
+          description:
+            `This command is on cooldown. Please wait ${formattedCooldown} before trying again.`,
+
+          color:
+            'error',
+        });
 
       await message.channel.send({
-        embeds: [embed],
+        embeds: [
+          embed
+        ],
       }).catch(() => {});
 
       return;
@@ -552,7 +669,9 @@ async function handleLeveling(
 
     if (
       levelingConfig.ignoredChannels
-        ?.includes(message.channel.id)
+        ?.includes(
+          message.channel.id
+        )
     ) {
       return;
     }
@@ -562,7 +681,9 @@ async function handleLeveling(
     ) {
       const member =
         await message.guild.members
-          .fetch(message.author.id)
+          .fetch(
+            message.author.id
+          )
           .catch(() => null);
 
       if (
@@ -580,7 +701,9 @@ async function handleLeveling(
 
     if (
       levelingConfig.blacklistedUsers
-        ?.includes(message.author.id)
+        ?.includes(
+          message.author.id
+        )
     ) {
       return;
     }
@@ -600,12 +723,15 @@ async function handleLeveling(
       );
 
     const cooldownTime =
-      levelingConfig.xpCooldown || 60;
+      levelingConfig.xpCooldown ||
+      60;
 
-    const now = Date.now();
+    const now =
+      Date.now();
 
     const timeSinceLastMessage =
-      now - (userData.lastMessage || 0);
+      now -
+      (userData.lastMessage || 0);
 
     if (
       timeSinceLastMessage <
@@ -625,7 +751,10 @@ async function handleLeveling(
       25;
 
     const safeMinXP =
-      Math.max(1, minXP);
+      Math.max(
+        1,
+        minXP
+      );
 
     const safeMaxXP =
       Math.max(
@@ -636,19 +765,26 @@ async function handleLeveling(
     const xpToGive =
       Math.floor(
         Math.random() *
-        (safeMaxXP - safeMinXP + 1)
-      ) + safeMinXP;
+        (
+          safeMaxXP -
+          safeMinXP +
+          1
+        )
+      ) +
+      safeMinXP;
 
-    let finalXP = xpToGive;
+    let finalXP =
+      xpToGive;
 
     if (
       levelingConfig.xpMultiplier &&
       levelingConfig.xpMultiplier > 1
     ) {
-      finalXP = Math.floor(
-        finalXP *
-        levelingConfig.xpMultiplier
-      );
+      finalXP =
+        Math.floor(
+          finalXP *
+          levelingConfig.xpMultiplier
+        );
     }
 
     const result =
