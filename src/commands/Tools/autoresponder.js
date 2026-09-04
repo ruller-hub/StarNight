@@ -1,12 +1,6 @@
 import { SlashCommandBuilder, MessageFlags } from 'discord.js';
 import { InteractionHelper } from '../../utils/interactionHelper.js';
 import { logger } from '../../utils/logger.js';
-import {
-    setAutoResponse,
-    deleteAutoResponse,
-    getAllAutoResponses
-} from '../../services/autoResponderService.js';
-console.log('🔥 AUTO RESPONDER COMMAND FILE LOADED');
 
 export default {
     data: new SlashCommandBuilder()
@@ -68,7 +62,7 @@ export default {
             const trigger = interaction.options.getString('trigger');
             const reply = interaction.options.getString('reply');
 
-            setAutoResponse(trigger, reply);
+            // TODO: Save trigger + reply to your autoresponder storage
 
             await InteractionHelper.safeEditReply(interaction, {
                 content: `✅ Autoresponder created!\n\n**Trigger:** \`${trigger}\`\n**Reply:** ${reply}`
@@ -80,39 +74,23 @@ export default {
         if (subcommand === 'remove') {
             const trigger = interaction.options.getString('trigger');
 
-            const removed = deleteAutoResponse(trigger);
+            // TODO: Remove trigger from your autoresponder storage
 
             await InteractionHelper.safeEditReply(interaction, {
-                content: removed
-                    ? `✅ Autoresponder \`${trigger}\` has been removed.`
-                    : `❌ No autoresponder found for \`${trigger}\`.`
+                content: `✅ Autoresponder \`${trigger}\` has been removed.`
             });
 
             return;
         }
 
         if (subcommand === 'list') {
-            const responders = getAllAutoResponses();
-
-            const entries = Object.entries(responders);
-
-            if (entries.length === 0) {
-                await InteractionHelper.safeEditReply(interaction, {
-                    content: '📋 Your server has no autoresponders yet.'
-                });
-                return;
-            }
-
-            const list = entries
-                .map(([trigger, reply]) => `• \`${trigger}\` → ${reply}`)
-                .join('\n');
+            // TODO: Get autoresponders from your storage
 
             await InteractionHelper.safeEditReply(interaction, {
-                content: `📋 **Autoresponders**\n\n${list}`
+                content: '📋 Your server has no autoresponders yet.'
             });
 
             return;
         }
     }
 };
-```
