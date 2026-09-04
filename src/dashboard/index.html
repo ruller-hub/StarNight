@@ -267,8 +267,25 @@
 <script>
 
 fetch('/api/dashboard')
-    .then(response => response.json())
-    .then(data => {
+  .then(response => response.json())
+  .then(data => {
+    document.getElementById('guildCount').textContent = data.guildCount;
+    document.getElementById('commandCount').textContent = data.commandCount;
+  })
+  .catch(error => {
+    console.error(error);
+    document.getElementById('guildCount').textContent = '?';
+    document.getElementById('commandCount').textContent = '?';
+  });
+
+fetch('/api/dashboard/config?guildId=1376104790672539690')
+  .then(response => response.json())
+  .then(data => {
+    console.log('Guild configuration:', data.config);
+  })
+  .catch(error => {
+    console.error('Config loading error:', error);
+  });
 
         document.getElementById('guildCount').textContent =
             data.guildCount;
