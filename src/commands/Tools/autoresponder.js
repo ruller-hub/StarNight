@@ -7,6 +7,7 @@ import {
     getAllAutoResponses
 } from '../../services/autoResponderService.js';
 console.log('🔥 AUTO RESPONDER COMMAND FILE LOADED');
+
 export default {
     data: new SlashCommandBuilder()
         .setName('autoresponder')
