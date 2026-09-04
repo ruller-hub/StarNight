@@ -88,7 +88,17 @@ if (!parsed) {
     }
   }
 }
+// n @user NewNickname
+if (!parsed) {
+  const parts = message.content.trim().split(/\s+/);
 
+  if (parts[0].toLowerCase() === 'n') {
+    parsed = {
+      commandName: 'setnickname',
+      args: parts.slice(1),
+    };
+  }
+}
 if (!parsed) {
   return;
 }
