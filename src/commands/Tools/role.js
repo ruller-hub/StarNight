@@ -16,7 +16,7 @@ export default {
         .addStringOption(option =>
             option
                 .setName('role')
-                .setDescription('The name of the role to give')
+                .setDescription('The role name')
                 .setRequired(true)
         )
         .setDefaultMemberPermissions(
@@ -25,22 +25,13 @@ export default {
 
     async execute(interaction) {
         const user = interaction.options.getUser('user');
-        const roleName = interaction.options.getString('role')?.trim();
+        const roleName = interaction.options
+            .getString('role')
+            ?.trim();
 
-        if (!roleName) {
+        if (!user || !roleName) {
             return interaction.reply({
-                content: '❌ Please provide a role name.',
-                ephemeral: true
-            });
-        }
-
-        const role = interaction.guild.roles.cache.find(
-            r => r.name.toLowerCase() === roleName.toLowerCase()
-        );
-
-        if (!role) {
-            return interaction.reply({
-                content: `❌ Role **${roleName}** not found.`,
+                content: '❌ Usage: `r @user RoleName`',
                 ephemeral: true
             });
         }
@@ -56,23 +47,43 @@ export default {
             });
         }
 
-        if (role.managed) {
+        const role = interaction.guild.roles.cache.find(
+            r =>
+                r.name.toLowerCase() ===
+                roleName.toLowerCase()
+        );
+
+        if (!role) {
             return interaction.reply({
-                content: '❌ I cannot give a managed/integration role.',
+                content:
+                    `❌ Role **${roleName}** not found.`,
                 ephemeral: true
             });
         }
 
-        const botMember = interaction.guild.members.me;
+        if (role.managed) {
+            return interaction.reply({
+                content:
+                    '❌ I cannot give a managed role.',
+                ephemeral: true
+            });
+        }
+
+        const botMember =
+            interaction.guild.members.me;
 
         if (!botMember) {
             return interaction.reply({
-                content: '❌ I could not find my bot member.',
+                content:
+                    '❌ I could not find my bot member.',
                 ephemeral: true
             });
         }
 
-        if (botMember.roles.highest.position <= role.position) {
+        if (
+            botMember.roles.highest.position <=
+            role.position
+        ) {
             return interaction.reply({
                 content:
                     '❌ That role is higher than or equal to my highest role.',
@@ -82,7 +93,8 @@ export default {
 
         if (member.roles.cache.has(role.id)) {
             return interaction.reply({
-                content: `❌ ${user} already has the ${role} role.`,
+                content:
+                    `❌ ${user} already has ${role}.`,
                 ephemeral: true
             });
         }
@@ -90,14 +102,20 @@ export default {
         try {
             await member.roles.add(role);
 
-            await interaction.reply({
-                content: `✅ Gave ${role} to ${user}.`
+            return interaction.reply({
+                content:
+                    `✅ Gave ${role} to ${user}.`
             });
-        } catch (error) {
-            console.error('Error giving role:', error);
 
-            await interaction.reply({
-                content: '❌ I could not give that role.',
+        } catch (error) {
+            console.error(
+                'Error giving role:',
+                error
+            );
+
+            return interaction.reply({
+                content:
+                    '❌ I could not give that role.',
                 ephemeral: true
             });
         }
