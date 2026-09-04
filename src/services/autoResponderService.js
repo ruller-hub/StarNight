@@ -5,13 +5,21 @@ export function getAutoResponse(content) {
 
     const normalized = content.trim().toLowerCase();
 
+    console.log('[AUTORESPONDER] Checking:', normalized);
+    console.log('[AUTORESPONDER] Stored:', [...autoResponses.entries()]);
+
     return autoResponses.get(normalized) ?? null;
 }
 
 export function setAutoResponse(trigger, response) {
     if (!trigger || !response) return false;
 
-    autoResponses.set(trigger.trim().toLowerCase(), response);
+    const normalized = trigger.trim().toLowerCase();
+
+    autoResponses.set(normalized, response);
+
+    console.log('[AUTORESPONDER] Saved:', normalized, '->', response);
+
     return true;
 }
 
