@@ -288,6 +288,13 @@ fetch('/api/dashboard/config?guildId=1376104790672539690')
     console.error('Config loading error:', error);
   });
 
+
+document.getElementById('serverSettingsBtn').addEventListener('click', function(event) {
+  event.preventDefault();
+
+  alert('Server Settings clicked!');
+});
+
 </script>
 
 </body>
