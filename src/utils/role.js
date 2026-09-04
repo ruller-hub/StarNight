@@ -13,15 +13,12 @@ export default {
                 .setDescription('The member to give the role to')
                 .setRequired(true)
         )
-        .addRoleOption(option =>
-            option
-                .setName('role')
-                .setDescription('The role to give')
-                .setRequired(true)
-        )
-        .setDefaultMemberPermissions(
-            PermissionFlagsBits.ManageRoles
-        ),
+       .addStringOption(option =>
+    option
+        .setName('role')
+        .setDescription('The name of the role to give')
+        .setRequired(true)
+)
 
     async execute(interaction) {
         const user = interaction.options.getUser('user');
