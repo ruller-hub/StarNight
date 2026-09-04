@@ -2,6 +2,8 @@
 import { Client, Collection, GatewayIntentBits } from 'discord.js';
 import { REST } from '@discordjs/rest';
 import express from 'express';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import cron from 'node-cron';
 
 import config from './config/application.js';
@@ -111,6 +113,9 @@ class TitanBot extends Client {
 
   startWebServer() {
     const app = express();
+    const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+app.use(express.static(path.join(__dirname, 'dashboard')));
     const configuredPort = Number(this.config.api?.port || process.env.PORT || 3000);
     const maxPortRetryAttempts = Number(process.env.PORT_RETRY_ATTEMPTS || 5);
     const host = process.env.WEB_HOST || '0.0.0.0';
