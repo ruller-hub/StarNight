@@ -206,7 +206,15 @@ app.use(express.static(path.join(__dirname, 'dashboard')));
         metrics,
       });
     });
-
+    
+app.get('/api/dashboard', (req, res) => {
+  res.json({
+    guildCount: this.guilds.cache.size,
+    commandCount: this.commands.size,
+    botReady: this.isReady()
+  });
+});
+    
     app.get('/', (req, res) => {
       res.status(200).json({ 
         message: 'TitanBot System Online',
