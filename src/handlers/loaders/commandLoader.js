@@ -37,7 +37,7 @@ function getSubcommandInfo(commandData) {
 
 async function getAllFiles(directory, fileList = []) {
     const files = await fs.readdir(directory, {
-        withFileTypes: true
+        withFileTypes: true,
     });
 
     for (const file of files) {
@@ -80,14 +80,6 @@ export async function loadCommands(client) {
                 '/'
             );
 
-            const commandName = path.basename(
-                filePath,
-                '.js'
-            );
-
-            const commandDir = path.dirname(filePath);
-            const category = path.basename(commandDir);
-
             const commandModule = await import(
                 pathToFileURL(filePath).href
             );
@@ -103,7 +95,10 @@ export async function loadCommands(client) {
                 continue;
             }
 
-            command.category = category;
+            command.category = path.basename(
+                path.dirname(filePath)
+            );
+
             command.filePath = normalizedPath;
 
             const primaryCommandName =
@@ -130,7 +125,7 @@ export async function loadCommands(client) {
                 );
 
             logger.info(
-                `Loaded command: ${primaryCommandName} from ${normalizedPath} (category: ${category})`
+                `Loaded command: ${primaryCommandName} from ${normalizedPath} (category: ${command.category})`
             );
 
             if (subcommands.length > 0) {
@@ -138,7 +133,6 @@ export async function loadCommands(client) {
                     `  - Subcommands: ${subcommands.join(', ')}`
                 );
             }
-
         } catch (error) {
             logger.error(
                 `❌ ERROR LOADING COMMAND: ${filePath}`
@@ -220,10 +214,6 @@ function collectCommandPayloads(client) {
         const commandName =
             command.data.name;
 
-        logger.debug(
-            `Processing command for registration: ${commandName}`
-        );
-
         if (
             registeredNames.has(commandName)
         ) {
@@ -245,20 +235,11 @@ function collectCommandPayloads(client) {
             getSubcommandInfo(
                 commandJson
             ).length;
-
-        if (
-            process.env.NODE_ENV !==
-            'production'
-        ) {
-            logger.debug(
-                `Registering command: ${commandName}`
-            );
-        }
     }
 
     return {
         commands,
-        totalSubcommands
+        totalSubcommands,
     };
 }
 
@@ -348,7 +329,7 @@ function validateCommands(commands) {
                     subOption.description.length > 110
                 ) {
                     validationErrors.push(
-                        `Command ${cmd.name} subcommand ${option.name} option ${subOption.name} has description longer than 110 chars: "${subOption.name}" (${subOption.description.length} chars)`
+                        `Command ${cmd.name} subcommand ${option.name} option ${subOption.name} has description longer than 110 chars: "${subOption.name}" (${subOption.name.length} chars)`
                     );
                 }
 
@@ -414,28 +395,49 @@ function prepareCommandsForRegistration(commands) {
         `Command count (${commands.length}) exceeds Discord limit (${MAX_COMMANDS}), selecting commands...`
     );
 
-    // Commands that must stay registered.
+    /*
+     * These commands are ALWAYS kept when we have more
+     * than Discord's 100 global-command limit.
+     *
+     * Music commands are included here so /play can
+     * never disappear just because another command was added.
+     */
     const priorityCommandNames = [
-        'role'
+        'play',
+        'skip',
+        'pause',
+        'resume',
+        'queue',
+        'stop',
+        'leave',
+        'afk',
+        'music',
+        'role',
     ];
 
-    const priorityCommands =
-        commands.filter(command =>
+    const priorityCommands = [];
+
+    const remainingCommands = [];
+
+    for (const command of commands) {
+        if (
             priorityCommandNames.includes(
                 command.name
             )
-        );
+        ) {
+            priorityCommands.push(command);
+        } else {
+            remainingCommands.push(command);
+        }
+    }
 
-    const remainingCommands =
-        commands.filter(command =>
-            !priorityCommandNames.includes(
-                command.name
-            )
-        );
-
+    /*
+     * Keep priority commands first, then fill the
+     * remaining slots with normal commands.
+     */
     const commandsToRegister = [
         ...priorityCommands,
-        ...remainingCommands
+        ...remainingCommands,
     ].slice(0, MAX_COMMANDS);
 
     const registeredNames = new Set(
@@ -459,6 +461,12 @@ function prepareCommandsForRegistration(commands) {
                 .join(', ')}`
         );
     }
+
+    logger.info(
+        `Priority commands preserved: ${priorityCommands
+            .map(command => command.name)
+            .join(', ')}`
+    );
 
     logger.info(
         `Selected ${commandsToRegister.length} commands for registration`
@@ -517,7 +525,7 @@ async function registerGlobalCommands(
         await client.rest.put(
             `/applications/${clientId}/commands`,
             {
-                body: []
+                body: [],
             }
         );
     }
@@ -529,7 +537,7 @@ async function registerGlobalCommands(
     await client.rest.put(
         `/applications/${clientId}/commands`,
         {
-            body: commandsToRegister
+            body: commandsToRegister,
         }
     );
 
@@ -547,14 +555,16 @@ export async function registerCommands(
     options = {}
 ) {
     const {
-        clientId = null
+        clientId = null,
     } = options;
 
     try {
         const {
             commands,
-            totalSubcommands
-        } = collectCommandPayloads(client);
+            totalSubcommands,
+        } = collectCommandPayloads(
+            client
+        );
 
         await registerGlobalCommands(
             client,
@@ -562,7 +572,6 @@ export async function registerCommands(
             commands,
             totalSubcommands
         );
-
     } catch (error) {
         logger.error(
             'Error registering commands:',
@@ -585,7 +594,7 @@ export async function reloadCommand(
     if (!command) {
         return {
             success: false,
-            message: `Command "${commandName}" not found`
+            message: `Command "${commandName}" not found`,
         };
     }
 
@@ -623,9 +632,8 @@ export async function reloadCommand(
 
         return {
             success: true,
-            message: `Successfully reloaded command "${commandName}"`
+            message: `Successfully reloaded command "${commandName}"`,
         };
-
     } catch (error) {
         logger.error(
             `Error reloading command "${commandName}":`,
@@ -634,7 +642,7 @@ export async function reloadCommand(
 
         return {
             success: false,
-            message: `Error reloading command: ${error.message}`
+            message: `Error reloading command: ${error.message}`,
         };
     }
 }
