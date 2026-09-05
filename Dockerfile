@@ -1,11 +1,11 @@
-FROM node:20-alpine
+FROM node:22.12-alpine
 
 WORKDIR /usr/src/app
 
 ENV NODE_ENV=production
 
-COPY package*.json ./
-RUN npm ci --omit=dev
+COPY package.json ./
+RUN npm install --omit=dev
 
 COPY . .
 
