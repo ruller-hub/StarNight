@@ -14,8 +14,13 @@ import {
 } from './musicEmbeds.js';
 import { refreshPlayerMessage } from './playerHandler.js';
 
-const YOUTUBE_URL_PATTERN = /(?:youtube\.com|youtu\.be)/i;
-const PLAYER_CONNECT_TIMEOUT_MS = 12_000;
+if (YOUTUBE_URL_PATTERN.test(query)) {
+    throw new TitanBotError(
+        'YouTube URL blocked',
+        ErrorTypes.USER_INPUT,
+        'YouTube links are not supported. Try a song name instead.',
+    );
+}const PLAYER_CONNECT_TIMEOUT_MS = 12_000;
 
 function getConnectedLavalinkNodes(client) {
     if (!client.riffy?.nodeMap) {
