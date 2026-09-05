@@ -395,13 +395,7 @@ function prepareCommandsForRegistration(commands) {
         `Command count (${commands.length}) exceeds Discord limit (${MAX_COMMANDS}), selecting commands...`
     );
 
-    /*
-     * These commands are ALWAYS kept when we have more
-     * than Discord's 100 global-command limit.
-     *
-     * Music commands are included here so /play can
-     * never disappear just because another command was added.
-     */
+    // These commands will ALWAYS be kept.
     const priorityCommandNames = [
         'play',
         'skip',
@@ -416,7 +410,6 @@ function prepareCommandsForRegistration(commands) {
     ];
 
     const priorityCommands = [];
-
     const remainingCommands = [];
 
     for (const command of commands) {
@@ -431,10 +424,6 @@ function prepareCommandsForRegistration(commands) {
         }
     }
 
-    /*
-     * Keep priority commands first, then fill the
-     * remaining slots with normal commands.
-     */
     const commandsToRegister = [
         ...priorityCommands,
         ...remainingCommands,
